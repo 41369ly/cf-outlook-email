@@ -15,7 +15,7 @@
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/roseforyou/cf-outlook-email)
 
-⚠️ 此按钮**无法一键部署**：项目依赖 D1 数据库与 Secret，需手动建库、跑迁移、设密钥，按钮会因框架检测失败而报错。请按 📖 [详细部署教程](./docs/GUIDE.md) 操作（约 5 分钟）。
+⚠️ 此按钮只能部署 Worker 代码：D1 迁移和 Secret 仍需手动配置。仓库已包含 `wrangler.toml`；如果部署到其他 Cloudflare 账号，请先替换其中的 D1 `database_id`，再按 📖 [详细部署教程](./docs/GUIDE.md) 操作。
 
 🌐 [English](./README_EN.md) · 📖 [详细部署教程](./docs/GUIDE.md) · 🔌 [对外 API 文档](./docs/API.md)
 
@@ -51,10 +51,9 @@ pnpm install
 # 2. 登录 Cloudflare
 pnpm exec wrangler login
 
-# 3. 创建数据库（把输出的 database_id 填入 wrangler.toml）
+# 3. 创建数据库（仅部署到其他 Cloudflare 账号时需要）
 pnpm exec wrangler d1 create outlook-email-db
-cp wrangler.toml.example wrangler.toml
-# 编辑 wrangler.toml，替换 REPLACE_WITH_YOUR_DATABASE_ID
+# 编辑 wrangler.toml，替换 database_id
 
 # 4. 配置密码
 pnpm exec wrangler secret put ADMIN_PASSWORD

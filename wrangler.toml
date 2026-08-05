@@ -1,0 +1,22 @@
+name = "outlook-email"
+main = "src/index.ts"
+compatibility_date = "2026-06-01"
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "outlook-email-db"
+database_id = "a7dd0db3-dec6-4739-8703-82b411fef093"
+migrations_dir = "migrations"
+
+# Optional secret for trusted automation to import Outlook accounts without a session cookie:
+# pnpm exec wrangler secret put ACCOUNT_IMPORT_API_KEY
+
+# Scheduled token refresh. This is just the BASE wake-up rate (every 6h);
+# the actual interval / batch / on-off is controlled in 系统设置 at runtime.
+# Free plan allows up to 5 cron triggers per account.
+[triggers]
+crons = ["0 */6 * * *"]

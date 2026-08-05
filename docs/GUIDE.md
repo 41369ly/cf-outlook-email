@@ -89,13 +89,9 @@ pnpm exec wrangler d1 create outlook-email-db
 database_id = "abc12345-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 ```
 
-**复制 `database_id` 的值**，然后：
+**复制 `database_id` 的值**，然后打开仓库根目录的 `wrangler.toml`，把其中的 `database_id` 替换为你的值。
 
-```bash
-cp wrangler.toml.example wrangler.toml
-```
-
-打开 `wrangler.toml`，把 `REPLACE_WITH_YOUR_DATABASE_ID` 替换为你的 database_id。
+> 本仓库已包含当前部署使用的 `wrangler.toml`。如果部署到其他 Cloudflare 账号，不要覆盖配置文件，直接替换其中的 D1 `database_id`；`wrangler.toml.example` 仅用于参考。
 
 ---
 

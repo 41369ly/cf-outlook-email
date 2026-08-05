@@ -15,7 +15,7 @@
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/roseforyou/cf-outlook-email)
 
-⚠️ This button **cannot one-click deploy** this project: it relies on a D1 database and Secrets, which require manually creating the DB, running migrations, and setting secrets — the button fails at framework detection. Please follow the 📖 [Deployment Guide](./docs/GUIDE.md) instead (~5 min).
+⚠️ This button only deploys the Worker code: D1 migrations and Secrets still require manual setup. The repository now includes `wrangler.toml`; when deploying to another Cloudflare account, replace its D1 `database_id` first, then follow the 📖 [Deployment Guide](./docs/GUIDE.md).
 
 🌐 [中文](./README.md) · 📖 [Deployment Guide](./docs/GUIDE.md) · 🔌 [API Docs](./docs/API.md)
 
@@ -51,10 +51,9 @@ pnpm install
 # 2. Login to Cloudflare
 pnpm exec wrangler login
 
-# 3. Create D1 database (copy database_id to wrangler.toml)
+# 3. Create D1 database (only when deploying to another Cloudflare account)
 pnpm exec wrangler d1 create outlook-email-db
-cp wrangler.toml.example wrangler.toml
-# Edit wrangler.toml, replace REPLACE_WITH_YOUR_DATABASE_ID
+# Edit wrangler.toml and replace database_id
 
 # 4. Set secrets
 pnpm exec wrangler secret put ADMIN_PASSWORD
