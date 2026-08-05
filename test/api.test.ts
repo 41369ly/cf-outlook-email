@@ -10,6 +10,7 @@ function createMockDB() {
   };
   return {
     prepare: vi.fn(() => mockStmt),
+    batch: vi.fn().mockResolvedValue([]),
     _stmt: mockStmt,
   };
 }
@@ -180,5 +181,87 @@ describe('accounts route: status recovery on token update', () => {
       { ...baseAccount, status: 'disabled' }
     );
     expect(updateCall![6]).toBe('disabled');
+  });
+});
+
+describe('account import route', () => {
+  async function postImport(
+    body: string,
+    options: { key?: string; configuredKey?: string; contentType?: string; batchChanges?: number[] } = {}
+  ) {
+    const importRoute = (await import('../src/routes/import')).default;
+    const mockDB = createMockDB();
+    mockDB.batch.mockResolvedValue(
+      (options.batchChanges ?? [1]).map((changes) => ({ meta: { changes } }))
+    );
+    const env = {
+      DB: mockDB,
+      ACCOUNT_IMPORT_API_KEY: options.configuredKey ?? 'import-secret',
+    };
+    const res = await importRoute.request(
+      '/accounts',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': options.contentType ?? 'text/plain',
+          ...(options.key === undefined ? {} : { 'X-Import-Key': options.key }),
+        },
+        body,
+      },
+      env as any
+    );
+    return { res, mockDB };
+  }
+
+  it('rejects requests when the import secret is not configured', async () => {
+    const { res } = await postImport('a@b.com----pwd----cid----rt', { configuredKey: '' });
+    expect(res.status).toBe(503);
+    expect(await res.json()).toMatchObject({ error: { code: 'IMPORT_DISABLED' } });
+  });
+
+  it('rejects an invalid import key', async () => {
+    const { res } = await postImport('a@b.com----pwd----cid----rt', { key: 'wrong' });
+    expect(res.status).toBe(401);
+    expect(await res.json()).toMatchObject({ error: { code: 'UNAUTHORIZED' } });
+  });
+
+  it('imports text lines and reports invalid rows and duplicates', async () => {
+    const body = [
+      'a@outlook.com----pwd----cid-a----rt-a',
+      'not-an-email----pwd----cid-b----rt-b',
+      'b@outlook.com----pwd----cid-b----rt-b',
+    ].join('\n');
+    const { res, mockDB } = await postImport(body, { key: 'import-secret', batchChanges: [1, 0] });
+
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({
+      success: true,
+      data: { total: 3, imported: 1, skipped: 1, invalid: 1 },
+    });
+    expect(mockDB.batch).toHaveBeenCalledTimes(1);
+    expect(mockDB.batch.mock.calls[0][0]).toHaveLength(2);
+  });
+
+  it('accepts the JSON form with group and remark', async () => {
+    const payload = JSON.stringify({
+      account_string: 'a@outlook.com----pwd----cid----rt',
+      group_id: 2,
+      remark: '自动注册',
+    });
+    const { res, mockDB } = await postImport(payload, {
+      key: 'import-secret',
+      contentType: 'application/json',
+    });
+
+    expect(res.status).toBe(200);
+    expect(mockDB.prepare.mock.calls[0][0]).toContain('INSERT OR IGNORE INTO accounts');
+    expect(mockDB._stmt.bind).toHaveBeenLastCalledWith(
+      'a@outlook.com',
+      'pwd',
+      'cid',
+      'rt',
+      2,
+      '自动注册',
+    );
   });
 });

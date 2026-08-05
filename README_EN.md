@@ -59,6 +59,8 @@ cp wrangler.toml.example wrangler.toml
 # 4. Set secrets
 pnpm exec wrangler secret put ADMIN_PASSWORD
 pnpm exec wrangler secret put COOKIE_SECRET
+# Optional: allow a trusted registrar to import accounts without a session
+pnpm exec wrangler secret put ACCOUNT_IMPORT_API_KEY
 
 # 5. Initialize & deploy
 pnpm exec wrangler d1 migrations apply outlook-email-db --remote
@@ -72,6 +74,8 @@ Visit the output URL and login with your password. 🎉
 Login → **Add Account** → **One-Click Auth** → Microsoft login popup → Authorize → Credentials auto-filled → Save.
 
 Works with all Outlook / Hotmail / Live accounts. Bulk import supported (format: `email----password----client_id----refresh_token`).
+
+Trusted automation can also call `POST /api/import/accounts` with the same bulk format and the `X-Import-Key` header. See the [API Docs](./docs/API.md).
 
 ## 🧱 Tech Stack
 

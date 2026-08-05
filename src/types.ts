@@ -4,6 +4,7 @@ export interface Env {
   ASSETS: Fetcher;
   ADMIN_PASSWORD: string;
   COOKIE_SECRET: string;
+  ACCOUNT_IMPORT_API_KEY?: string;
   GPTMAIL_API_KEY?: string;
 }
 

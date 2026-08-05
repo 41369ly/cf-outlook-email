@@ -12,6 +12,7 @@ import tempEmailRoutes from './routes/tempEmails';
 import oauthRoutes from './routes/oauth';
 import externalRoutes from './routes/external';
 import tagRoutes from './routes/tags';
+import importRoutes from './routes/import';
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -54,6 +55,8 @@ app.route('/api/oauth', oauthRoutes);
 
 // External API (no cookie auth - uses its own API-key check)
 app.route('/api/external', externalRoutes);
+// Account import uses a dedicated Worker secret and must not require an admin session cookie.
+app.route('/api/import', importRoutes);
 
 // Protected API routes
 app.use('/api/*', authMiddleware());

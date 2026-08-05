@@ -113,6 +113,12 @@ pnpm exec wrangler secret put COOKIE_SECRET
 
 提示时输入一串**随机字符**（至少 32 位），例如键盘乱敲：`aK3mX9pQ2wE8rT6yU1iO4sD7fG0hJ5l`。
 
+> 如果要让注册器自动导入账号，再配置独立的导入密钥：
+> ```bash
+> pnpm exec wrangler secret put ACCOUNT_IMPORT_API_KEY
+> ```
+> 该密钥只放在可信服务的请求头 `X-Import-Key` 中，不要放进 URL、前端代码或日志。
+
 > 可选：如果你有 GPTMail API Key，也可以配置临时邮箱功能：
 > ```bash
 > pnpm exec wrangler secret put GPTMAIL_API_KEY
@@ -369,6 +375,7 @@ curl -X POST https://login.microsoftonline.com/common/oauth2/v2.0/token \
 | `/api/groups` | GET/POST | 分组列表/新增 |
 | `/api/groups/:id` | PUT/DELETE | 修改/删除分组 |
 | `/api/accounts` | GET/POST | 账号列表/添加 |
+| `/api/import/accounts` | POST | 使用专用密钥自动导入账号 |
 | `/api/accounts/export` | GET | 导出账号 |
 | `/api/accounts/batch` | POST | 批量操作 |
 | `/api/accounts/:id` | GET/PUT/DELETE | 账号详情/修改/删除 |

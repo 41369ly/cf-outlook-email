@@ -59,6 +59,8 @@ cp wrangler.toml.example wrangler.toml
 # 4. 配置密码
 pnpm exec wrangler secret put ADMIN_PASSWORD
 pnpm exec wrangler secret put COOKIE_SECRET
+# 可选：让注册器免登录自动导入账号
+pnpm exec wrangler secret put ACCOUNT_IMPORT_API_KEY
 
 # 5. 初始化 & 部署
 pnpm exec wrangler d1 migrations apply outlook-email-db --remote
@@ -72,6 +74,8 @@ pnpm exec wrangler deploy
 登录后点击 **添加账号** → **一键授权** → 弹出微软登录窗口 → 授权后自动填入凭证 → 保存。
 
 支持所有 Outlook / Hotmail / Live 邮箱，也支持批量导入（格式：`邮箱----密码----client_id----refresh_token`）。
+
+可信的自动化程序还可以调用 `POST /api/import/accounts`，使用 `X-Import-Key` 请求头和同样的批量格式导入账号。详见 [对外 API 文档](./docs/API.md)。
 
 ## 🧱 技术栈
 

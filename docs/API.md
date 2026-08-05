@@ -2,6 +2,79 @@
 
 用 API Key 免登录拉取指定邮箱的邮件，适合脚本自动获取验证码、集成到其他系统。
 
+## 账号导入 API（自动化）
+
+该接口用于让注册器或其他可信服务自动导入 Outlook 账号，不需要登录后台 Cookie。它与网页批量导入使用相同的格式。
+
+### 启用
+
+在 Worker 中配置独立 Secret：
+
+```bash
+pnpm exec wrangler secret put ACCOUNT_IMPORT_API_KEY
+```
+
+不要把这个 Secret 写入 `wrangler.toml`、前端代码、URL 或日志。
+
+### 导入接口
+
+```text
+POST /api/import/accounts
+```
+
+鉴权只接受请求头：
+
+```text
+X-Import-Key: 你的 ACCOUNT_IMPORT_API_KEY
+```
+
+推荐直接提交 `Results/oauth2.txt` 的纯文本内容：
+
+```bash
+curl "https://你的域名/api/import/accounts" \
+  -X POST \
+  -H "Content-Type: text/plain; charset=utf-8" \
+  -H "X-Import-Key: 你的导入密钥" \
+  --data-binary @Results/oauth2.txt
+```
+
+也支持 JSON，可指定分组和备注：
+
+```json
+{
+  "account_string": "abc@outlook.com----password----client_id----refresh_token",
+  "group_id": 1,
+  "remark": "自动注册"
+}
+```
+
+每行格式为：
+
+```text
+邮箱----密码----client_id----refresh_token
+```
+
+返回示例：
+
+```json
+{
+  "success": true,
+  "data": { "total": 2, "imported": 1, "skipped": 1, "invalid": 0 },
+  "message": "导入完成：新增 1 个，跳过 1 个，无效 0 个"
+}
+```
+
+`skipped` 通常表示邮箱已存在；重复导入不会覆盖现有账号。
+
+错误码：
+
+| HTTP | code | 含义 |
+|:----:|------|------|
+| 401 | `UNAUTHORIZED` | 导入密钥缺失或错误 |
+| 400 | `BAD_REQUEST` | 请求格式或账号字段无效 |
+| 413 | `PAYLOAD_TOO_LARGE` | 内容超过 1 MB 或单次超过 100 个账号 |
+| 503 | `IMPORT_DISABLED` | 尚未配置 `ACCOUNT_IMPORT_API_KEY` |
+
 ## 1. 启用 / 获取 API Key
 
 登录后台 → **系统设置** → **对外 API** → 点「生成 API Key」。
