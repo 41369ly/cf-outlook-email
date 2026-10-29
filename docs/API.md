@@ -2,6 +2,75 @@
 
 用 API Key 免登录拉取指定邮箱的邮件，适合脚本自动获取验证码、集成到其他系统。
 
+## 分组接口（对接码/注册器用）
+
+同样只认 `X-API-Key`（或 `?key=`），不需要后台会话。路径都在 `/api/external` 下。
+
+### 列出分组
+
+```text
+GET /api/external/groups
+```
+
+```json
+{
+  "success": true,
+  "data": [
+    { "id": 1, "name": "默认分组", "description": "", "color": "#2563eb", "account_count": 5 },
+    { "id": 7, "name": "ozon", "description": "", "color": "#2563eb", "account_count": 2 }
+  ]
+}
+```
+
+### 列出分组里的邮箱
+
+```text
+GET /api/external/accounts?group_id=7&status=active&keyword=&limit=200
+```
+
+| 参数 | 必填 | 说明 |
+|------|:----:|------|
+| `group_id` | ❌ | 只取某个分组 |
+| `status` | ❌ | `active` / `error` / `disabled` |
+| `keyword` | ❌ | 按邮箱模糊搜索 |
+| `limit` | ❌ | 默认 200，最大 500 |
+
+返回里**不含** `client_id` / `refresh_token`，只给 `id`、`email`、`group_id`、`group_name`、`status`、`remark`、时间戳。
+
+```json
+{
+  "success": true,
+  "data": {
+    "count": 2,
+    "items": [
+      { "id": 41, "email": "fresh1@outlook.com", "group_id": 7, "group_name": "ozon", "status": "active", "remark": null }
+    ]
+  }
+}
+```
+
+### 把邮箱移动到另一个分组
+
+```text
+POST /api/external/groups/move
+Content-Type: application/json
+
+{ "email": "fresh1@outlook.com", "group_id": 1 }
+```
+
+也接受 `{"account_id": 41, "group_id": 1}`。注册成功后用它把邮箱从 `ozon` 分组移回
+`默认分组`：
+
+```json
+{
+  "success": true,
+  "data": { "id": 41, "email": "fresh1@outlook.com", "group_id": 1, "group_name": "默认分组" },
+  "message": "已移动到分组「默认分组」"
+}
+```
+
+错误码：`400 BAD_REQUEST`（缺 `group_id`/`email`）、`404 NOT_FOUND`（账号或分组不存在）。
+
 ## 账号导入 API（自动化）
 
 该接口用于让注册器或其他可信服务自动导入 Outlook 账号，不需要登录后台 Cookie。它与网页批量导入使用相同的格式。
